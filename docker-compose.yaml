@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+  db:
+    image: mariadb:latest
+    container_name: db
+    restart: always
+    env_file: ./.env
+    environment:
+      - MYSQL_ROOT_PASSWORD=$MARIADB_ROOT_PASSWORD
+      - MYSQL_DATABASE=$MARIADB_DATABASE
+      - MYSQL_USER=$MARIADB_USER
+    ports:
+      - "3306:3306"
+    volumes:
+      - mariadb:/var/lib/mysql
+  app:
+    depends_on:
+      - db
+    build: .
+    restart: on-failure
+    env_file: ./.env
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_APPLICATION_JSON: '{
+        "spring.datasource.url"  : "jdbc:mariadb://db:$MARIADB_DOCKER_PORT/$MARIADB_DATABASE",
+        "spring.datasource.username" : "$MARIADB_USER",
+        "spring.datasource.password" : "$MARIADB_ROOT_PASSWORD",
+        "spring.jpa.properties.hibernate.dialect" : "org.hibernate.dialect.MariaDBDialect",
+        "spring.jpa.hibernate.ddl-auto" : "update"
+      }'
+
+volumes:
+  mariadb:
