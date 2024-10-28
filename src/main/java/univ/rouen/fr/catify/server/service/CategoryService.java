@@ -48,15 +48,36 @@ public class CategoryService {
             throw new IllegalArgumentException("Category name cannot be null or empty");
         }
 
-        categoryRepository.findById(id).ifPresent(updated -> {
-            if (!categoryRepository.existsByName(category.getName()) || category.getName().equals(updated.getName())) {
-                updated.copyFrom(category);
-                categoryRepository.save(updated); // Sauvegarder les modifications
+        Category existingCategory = categoryRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Category not found"));
+
+        existingCategory.setName(category.getName());
+
+        List<Category> updatedChildren = new ArrayList<>();
+        for (Category child : category.getAllChildren()) {
+            if (child.getId() == null) {
+                child.setParent(existingCategory);
+                categoryRepository.save(child);
+                updatedChildren.add(child);
             } else {
-                throw new IllegalArgumentException("A category with this name already exists");
+                Category existingChild = categoryRepository.findById(child.getId())
+                        .orElseThrow(() -> new IllegalArgumentException("Child category not found"));
+                existingChild.setName(child.getName());
+                existingChild.setParent(existingCategory);
+                categoryRepository.save(existingChild);
+                updatedChildren.add(existingChild);
             }
-        });
+        }
+
+        for (Category currentChild : existingCategory.getAllChildren()) {
+            if (!updatedChildren.contains(currentChild)) {
+                currentChild.setParent(null);
+            }
+        }
+
+        categoryRepository.save(existingCategory);
     }
+
 
 
     @Transactional
@@ -71,6 +92,17 @@ public class CategoryService {
 
         if (!categoryRepository.existsByName(category.getName())) {
             categoryRepository.save(category);
+        }
+
+        for (Category c : category.getAllChildren()) {
+            if (!categoryRepository.existsByName(c.getName())) {
+                c.setParent(category);
+                categoryRepository.save(c);
+            } else {
+                Category cat = categoryRepository.findByName(c.getName());
+                cat.setParent(category);
+                categoryRepository.save(cat);
+            }
         }
     }
 }
