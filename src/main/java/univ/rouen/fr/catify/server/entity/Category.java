@@ -1,5 +1,8 @@
 package univ.rouen.fr.catify.server.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
@@ -9,57 +12,52 @@ import java.util.List;
 @Entity
 public class Category {
 
-    // ATTRIBUTES
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Column(unique = true)
     private String name;
-
-    public Category() {
-
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Category(int id, String name) {
-        this.id = id;
-        this.name = name;
-    }
-
-    /*
     private final Date dateOfCreation;
+
+    @ManyToOne
+    @JsonBackReference
     private Category parent;
+
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JsonManagedReference
     private final List<Category> children;
 
-
-    // CONSTRUCTOR
+    public Category() {
+        this.dateOfCreation = new Date();
+        this.children = new ArrayList<>();
+    }
 
     public Category(String name) {
         if (name == null || name.isEmpty()) {
             throw new IllegalArgumentException("Name cannot be null or empty");
         }
-        this.id = 0;
-        this.name = name;
         this.dateOfCreation = new Date();
-        this.parent = null;
         this.children = new ArrayList<>();
+        this.name = name;
+        this.parent = null;
     }
 
-    // REQUESTS
+    public Category(String name, Category parent) {
+        if (name == null || name.isEmpty()) {
+            throw new IllegalArgumentException("Name cannot be null or empty");
+        }
+        this.dateOfCreation = new Date();
+        this.children = new ArrayList<>();
+        this.name = name;
+        setParent(parent);
+    }
 
-    public int getId() {
+    public Integer getParentId() {
+        return this.parent == null ? null : this.parent.getId();
+    }
+
+    public Integer getId() {
         return id;
     }
 
@@ -79,18 +77,13 @@ public class Category {
         return parent == null;
     }
 
-    @Override
-    public String toString() {
-        return "Category [id=" + id + ", name=" + name + ", dateOfCreation="
-                + dateOfCreation + ", parent=" + parent + ", children=" + children + "]";
-    }
-
     public int getNumberChildren() {
         return children.size();
     }
 
+    @JsonIgnore
     public List<Category> getAllChildren() {
-        return children;
+        return new ArrayList<>(children);
     }
 
     public Category getChildrenAtIndex(int index) {
@@ -106,35 +99,57 @@ public class Category {
         return null;
     }
 
-    // COMMANDS
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
     public void setName(String name) {
+        if (name == null || name.isEmpty()) {
+            throw new IllegalArgumentException("Name cannot be null or empty");
+        }
         this.name = name;
     }
 
     public void setParent(Category parent) {
+        if (parent != null && parent.equals(this)) {
+            throw new IllegalArgumentException("A category cannot be its own parent");
+        }
+        if (this.parent != null) {
+            this.parent.children.remove(this);
+        }
         this.parent = parent;
-        if (parent != null)
-            parent.addChild(this);
+        if (parent != null && !parent.children.contains(this)) {
+            parent.children.add(this);
+        }
     }
 
     public void addChild(Category child) {
-        this.children.add(child);
-        child.setParent(this);
+        if (child == null) {
+            throw new IllegalArgumentException("Child cannot be null");
+        }
+        if (!this.children.contains(child)) {
+            this.children.add(child);
+            child.setParent(this);
+        }
     }
 
     public void removeChild(Category child) {
-        child.delete();
-        this.children.remove(child);
-        child.setParent(null);
+        if (child == null) {
+            throw new IllegalArgumentException("Child cannot be null");
+        }
+        if (children.remove(child)) {
+            child.setParent(null);
+        }
     }
 
-    public void delete() {
-        while (!children.isEmpty()) {
-            Category c = children.removeFirst();
-            c.delete();
-            c.setParent(null);
-        }
-    }*/
-}
+    public void clear() {
+        this.children.clear();
+    }
 
+    public void copyFrom(Category source) {
+        this.name = source.name;
+        this.parent = source.parent;
+        this.children.clear();
+        this.children.addAll(source.getAllChildren());
+    }
+}
