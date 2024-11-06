@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import univ.rouen.fr.catify.server.entity.Category;
 import univ.rouen.fr.catify.server.repository.CategoryRepository;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,13 +39,7 @@ public class CategoryService {
 
     @Transactional
     public void updateCategory(int id, Category category) {
-        if (category == null) {
-            throw new IllegalArgumentException("Category cannot be null");
-        }
-
-        if (category.getName() == null || category.getName().isEmpty()) {
-            throw new IllegalArgumentException("Category name cannot be null or empty");
-        }
+        checkCategory(category);
 
         Category existingCategory = categoryRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Category not found"));
@@ -78,17 +71,9 @@ public class CategoryService {
         categoryRepository.save(existingCategory);
     }
 
-
-
     @Transactional
     public void addCategory(Category category) {
-        if (category == null) {
-            throw new IllegalArgumentException("Category cannot be null");
-        }
-
-        if (category.getName() == null || category.getName().isEmpty()) {
-            throw new IllegalArgumentException("Category name cannot be null or empty");
-        }
+        checkCategory(category);
 
         if (!categoryRepository.existsByName(category.getName())) {
             categoryRepository.save(category);
@@ -103,6 +88,22 @@ public class CategoryService {
                 cat.setParent(category);
                 categoryRepository.save(cat);
             }
+        }
+    }
+
+    // UTILS
+
+    private void checkCategory(Category category) {
+        if (category == null) {
+            throw new IllegalArgumentException("Category cannot be null");
+        }
+
+        if (category.getName() == null || category.getName().isEmpty()) {
+            throw new IllegalArgumentException("Category name cannot be null or empty");
+        }
+
+        if (category.getParent() == category) {
+            throw new IllegalArgumentException("A category cannot be its own parent.");
         }
     }
 }
