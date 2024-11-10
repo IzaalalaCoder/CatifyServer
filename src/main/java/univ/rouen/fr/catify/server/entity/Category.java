@@ -77,7 +77,7 @@ public class Category {
         return parent == null;
     }
 
-    public int getNumberChildren() {
+    public Integer getNumberChildren() {
         return children.size();
     }
 
