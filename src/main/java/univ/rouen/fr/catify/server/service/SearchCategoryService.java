@@ -6,7 +6,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import univ.rouen.fr.catify.server.entity.Category;
 import univ.rouen.fr.catify.server.repository.CategoryRepository;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -14,12 +13,12 @@ import java.util.List;
 @Service
 public class SearchCategoryService {
 
-    private final CategoryRepository categoryRepository;
+    // ATTRIBUTES
 
     @Autowired
-    public SearchCategoryService(CategoryRepository categoryRepository) {
-        this.categoryRepository = categoryRepository;
-    }
+    private CategoryRepository categoryRepository;
+
+    // REQUESTS
 
     public Page<Category> searchCategories(Boolean root, Date afterDate, Date beforeDate, Pageable pageable) {
         if (afterDate != null && beforeDate != null && afterDate.after(beforeDate)) {
@@ -43,6 +42,8 @@ public class SearchCategoryService {
 
         return categories;
     }
+
+    // UTILS
 
     private List<Category> filterByRoot(List<Category> categories, Boolean root) {
         List<Category> filtered = new ArrayList<>();

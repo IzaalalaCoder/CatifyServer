@@ -12,6 +12,8 @@ import java.util.Date;
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, Integer> {
 
+    // REQUESTS
+
     boolean existsByName(String name);
 
     Category findByName(String name);

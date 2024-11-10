@@ -8,8 +8,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import univ.rouen.fr.catify.server.entity.Category;
 import univ.rouen.fr.catify.server.service.SearchCategoryService;
-
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -17,12 +15,12 @@ import java.util.List;
 @RequestMapping("categories/")
 public class SearchCategoryController {
 
-    private final SearchCategoryService searchCategoryService;
+    // ATTRIBUTES
 
     @Autowired
-    public SearchCategoryController(SearchCategoryService searchCategoryService) {
-        this.searchCategoryService = searchCategoryService;
-    }
+    private SearchCategoryService searchCategoryService;
+
+    // MAPPINGS
 
     @GetMapping("search")
     public Page<Category> searchCategories(
@@ -36,10 +34,7 @@ public class SearchCategoryController {
         Sort.Direction direction = Sort.Direction.fromString(sortDirection.toUpperCase());
         Pageable pageable = PageRequest.of(page, 10, direction, sortBy); // Initialisation du Pageable
 
-        // Récupérer toutes les catégories selon les filtres sans pagination
         List<Category> categoryList = searchCategoryService.searchCategories(root, afterDate, beforeDate);
-
-        // Utilisation d'un switch pour déterminer le tri
         switch (sortBy.toLowerCase()) {
             case "id":
                 categoryList.sort((c1, c2) -> {
@@ -68,7 +63,6 @@ public class SearchCategoryController {
             default:
                 throw new IllegalArgumentException("Invalid sort field: " + sortBy);
         }
-
         int start = page * 10;
         int end = Math.min((start + 10), categoryList.size());
         List<Category> paginatedList = categoryList.subList(start, end);
