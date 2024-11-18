@@ -2,10 +2,8 @@ package univ.rouen.fr.catify.server.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.web.bind.annotation.*;
 import univ.rouen.fr.catify.server.entity.Category;
 import univ.rouen.fr.catify.server.service.SearchCategoryService;
 import java.util.Date;
@@ -25,8 +23,8 @@ public class SearchCategoryController {
     @GetMapping("search")
     public Page<Category> searchCategories(
             @RequestParam(value = "root", required = false) Boolean root,
-            @RequestParam(value = "after", required = false) Date afterDate,
-            @RequestParam(value = "before", required = false) Date beforeDate,
+            @RequestParam(value = "after", required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") Date afterDate,
+            @RequestParam(value = "before", required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") Date beforeDate,
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "sort", defaultValue = "dateOfCreation") String sortBy,
             @RequestParam(value = "order", defaultValue = "asc") String sortDirection) {

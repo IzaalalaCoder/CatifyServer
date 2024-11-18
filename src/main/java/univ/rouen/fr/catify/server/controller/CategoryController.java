@@ -22,6 +22,11 @@ public class CategoryController {
         return categoryService.getCategoryById(id);
     }
 
+    @GetMapping(value = "/associate/{parent}/{child}")
+    public void associateChildAtParent(@PathVariable int parent, @PathVariable int child) {
+        this.categoryService.associate(parent, child);
+    }
+
     @GetMapping(value = "/{id}/childrens", produces = "application/json")
     public List<Category> getChildrensOfCategory(@PathVariable int id) {
         return categoryService.getCategoryById(id).getAllChildren();

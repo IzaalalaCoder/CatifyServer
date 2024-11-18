@@ -125,7 +125,7 @@ public class Category {
             this.parent.children.remove(this);
         }
         this.parent = parent;
-        if (parent != null && !parent.children.contains(this)) {
+        if (!parent.children.contains(this)) {
             parent.children.add(this);
         }
     }

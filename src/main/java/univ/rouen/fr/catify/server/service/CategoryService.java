@@ -29,6 +29,18 @@ public class CategoryService {
     // COMMANDS
 
     @Transactional
+    public void associate(int parentId, int childId) {
+        Category catParent = categoryRepository.findById(parentId).orElse(null);
+        Category catChild = categoryRepository.findById(childId).orElse(null);
+
+        if (catParent != null && catChild != null) {
+            catChild.setParent(catParent);
+            categoryRepository.save(catParent);
+            categoryRepository.save(catChild);
+        }
+    }
+
+    @Transactional
     public void deleteCategory(int id) {
         Category categoryToDelete = categoryRepository.findById(id).orElse(null);
 
