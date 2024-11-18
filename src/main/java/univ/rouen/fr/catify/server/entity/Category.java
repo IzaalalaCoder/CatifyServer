@@ -4,13 +4,14 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 @Entity
 public class Category {
+
+    // ATTRIBUTES
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,6 +28,8 @@ public class Category {
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JsonManagedReference
     private final List<Category> children;
+
+    // CONSTRUCTORS
 
     public Category() {
         this.dateOfCreation = new Date();
@@ -53,6 +56,8 @@ public class Category {
         setParent(parent);
     }
 
+    // REQUESTS
+
     public Integer getParentId() {
         return this.parent == null ? null : this.parent.getId();
     }
@@ -77,7 +82,7 @@ public class Category {
         return parent == null;
     }
 
-    public int getNumberChildren() {
+    public Integer getNumberChildren() {
         return children.size();
     }
 
@@ -99,6 +104,8 @@ public class Category {
         return null;
     }
 
+    // COMMANDS
+
     public void setId(Integer id) {
         this.id = id;
     }
@@ -118,7 +125,7 @@ public class Category {
             this.parent.children.remove(this);
         }
         this.parent = parent;
-        if (parent != null && !parent.children.contains(this)) {
+        if (!parent.children.contains(this)) {
             parent.children.add(this);
         }
     }

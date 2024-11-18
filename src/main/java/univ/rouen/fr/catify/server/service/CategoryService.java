@@ -11,8 +11,12 @@ import java.util.List;
 @Service
 public class CategoryService {
 
+    // ATTRIBUTES
+
     @Autowired
     private CategoryRepository categoryRepository;
+
+    // REQUESTS
 
     public List<Category> getAllCategories() {
         return new ArrayList<>(categoryRepository.findAll());
@@ -20,6 +24,20 @@ public class CategoryService {
 
     public Category getCategoryById(int id) {
         return categoryRepository.findById(id).orElse(null);
+    }
+
+    // COMMANDS
+
+    @Transactional
+    public void associate(int parentId, int childId) {
+        Category catParent = categoryRepository.findById(parentId).orElse(null);
+        Category catChild = categoryRepository.findById(childId).orElse(null);
+
+        if (catParent != null && catChild != null) {
+            catChild.setParent(catParent);
+            categoryRepository.save(catParent);
+            categoryRepository.save(catChild);
+        }
     }
 
     @Transactional

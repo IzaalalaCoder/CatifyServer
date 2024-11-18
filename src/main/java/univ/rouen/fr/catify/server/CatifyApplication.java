@@ -9,5 +9,4 @@ public class CatifyApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(CatifyApplication.class, args);
 	}
-
 }
