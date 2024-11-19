@@ -7,6 +7,7 @@ import univ.rouen.fr.catify.server.service.CategoryService;
 import java.util.List;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:4200")
 @RequestMapping(path = "/category")
 public class CategoryController {
 
