@@ -5,13 +5,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import univ.rouen.fr.catify.server.entity.Category;
 import univ.rouen.fr.catify.server.repository.CategoryRepository;
+
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class CategoryService {
-
-    // ATTRIBUTES
 
     @Autowired
     private CategoryRepository categoryRepository;
@@ -19,7 +18,7 @@ public class CategoryService {
     // REQUESTS
 
     public List<Category> getAllCategories() {
-        return new ArrayList<>(categoryRepository.findAll());
+        return categoryRepository.findAll();
     }
 
     public Category getCategoryById(int id) {
@@ -27,6 +26,47 @@ public class CategoryService {
     }
 
     // COMMANDS
+
+    @Transactional
+    public void addCategory(Category newCategory) {
+        checkCategory(newCategory);
+        for (Category child : new ArrayList<>(newCategory.getAllChildren())) {
+            Category cat = this.categoryRepository.findByName(child.getName());
+            if (cat != null) {
+                newCategory.addChild(cat);
+                newCategory.removeChild(child);
+            }
+        }
+        categoryRepository.save(newCategory);
+    }
+
+    @Transactional
+    public void updateCategory(int id, Category category) {
+        checkCategory(category);
+        Category existingCategory = categoryRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Category not found"));
+
+        existingCategory.setName(category.getName());
+        List<Category> categories = new ArrayList<>(category.getAllChildren());
+        for (Category newChild : categories) {
+            Category existingChild = categoryRepository.findByName(newChild.getName());
+            if (existingChild != null) {
+                existingCategory.addChild(existingChild);
+                existingCategory.removeChild(newChild);
+            } else {
+                categoryRepository.save(newChild);
+                existingCategory.addChild(newChild);
+            }
+        }
+
+        for (Category cat : new ArrayList<>(existingCategory.getAllChildren())) {
+            if (category.getChild(cat.getName()) == null) {
+                existingCategory.removeChild(cat);
+            }
+        }
+
+        categoryRepository.save(existingCategory);
+    }
 
     @Transactional
     public void associate(int parentId, int childId) {
@@ -49,64 +89,14 @@ public class CategoryService {
         }
 
         for (Category child : categoryToDelete.getAllChildren()) {
-            deleteCategory(child.getId());
+            deleteCategory(child.getId());  // Recursively delete children
         }
 
         categoryRepository.delete(categoryToDelete);
     }
 
-    @Transactional
-    public void updateCategory(int id, Category category) {
-        checkCategory(category);
-
-        Category existingCategory = categoryRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Category not found"));
-
-        existingCategory.setName(category.getName());
-
-        List<Category> updatedChildren = new ArrayList<>();
-        for (Category child : category.getAllChildren()) {
-            if (child.getId() == null) {
-                child.setParent(existingCategory);
-                categoryRepository.save(child);
-                updatedChildren.add(child);
-            } else {
-                Category existingChild = categoryRepository.findById(child.getId())
-                        .orElseThrow(() -> new IllegalArgumentException("Child category not found"));
-                existingChild.setName(child.getName());
-                existingChild.setParent(existingCategory);
-                categoryRepository.save(existingChild);
-                updatedChildren.add(existingChild);
-            }
-        }
-
-        for (Category currentChild : existingCategory.getAllChildren()) {
-            if (!updatedChildren.contains(currentChild)) {
-                currentChild.setParent(null);
-            }
-        }
-
-        categoryRepository.save(existingCategory);
-    }
-
-    @Transactional
-    public void addCategory(Category category) {
-        checkCategory(category);
-
-        if (!categoryRepository.existsByName(category.getName())) {
-            categoryRepository.save(category);
-        }
-
-        for (Category c : category.getAllChildren()) {
-            if (!categoryRepository.existsByName(c.getName())) {
-                c.setParent(category);
-                categoryRepository.save(c);
-            } else {
-                Category cat = categoryRepository.findByName(c.getName());
-                cat.setParent(category);
-                categoryRepository.save(cat);
-            }
-        }
+    public void deleteAll() {
+        this.categoryRepository.deleteAll();
     }
 
     // UTILS
@@ -121,7 +111,7 @@ public class CategoryService {
         }
 
         if (category.getParent() == category) {
-            throw new IllegalArgumentException("A category cannot be its own parent.");
+            throw new IllegalArgumentException("A category cannot be its own parent");
         }
     }
 }
