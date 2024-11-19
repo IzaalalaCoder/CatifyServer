@@ -19,6 +19,11 @@ public class CategoriesController {
 
     // MAPPINGS
 
+    @DeleteMapping(path="/deleteAll")
+    public void deleteAll() {
+        categoryService.deleteAll();
+    }
+
     @GetMapping(produces = "application/json")
     public List<Category> getCategories() {
         return categoryService.getAllCategories();
