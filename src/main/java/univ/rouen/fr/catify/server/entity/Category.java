@@ -149,6 +149,19 @@ public class Category {
         }
     }
 
+    public void setAllChild(List<Category> children) {
+        this.removeAllChild();
+        for (Category c : children) {
+            this.addChild(c);
+        }
+    }
+
+    public void removeAllChild() {
+        for (Category c : this.children) {
+            this.removeChild(c);
+        }
+    }
+
     public void clear() {
         this.children.clear();
     }

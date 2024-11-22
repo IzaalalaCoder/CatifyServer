@@ -23,9 +23,14 @@ public class CategoryController {
         return categoryService.getCategoryById(id);
     }
 
-    @GetMapping(value = "/associate/{parent}/{child}")
+    @PutMapping(value = "/associate/{parent}/{child}")
     public void associateChildAtParent(@PathVariable int parent, @PathVariable int child) {
         this.categoryService.associate(parent, child);
+    }
+
+    @PutMapping(value = "/dissociate/{parent}/{child}")
+    public void dissociateChildAtParent(@PathVariable int parent, @PathVariable int child) {
+        this.categoryService.dissociate(parent, child);
     }
 
     @GetMapping(value = "/{id}/childrens", produces = "application/json")
@@ -33,9 +38,9 @@ public class CategoryController {
         return categoryService.getCategoryById(id).getAllChildren();
     }
 
-    @PutMapping(value = "/update/{id}", consumes = "application/json")
-    public void updateCategory(@PathVariable int id, @RequestBody Category category) {
-        categoryService.updateCategory(id, category);
+    @PutMapping(value = "/update/{id}/name/{name}", consumes = "application/json")
+    public void updateCategoryOnName(@PathVariable int id, @PathVariable String name) {
+        categoryService.updateCategoryOnName(id, name);
     }
 
     @DeleteMapping("/delete/{id}")
