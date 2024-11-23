@@ -1,8 +1,6 @@
 package univ.rouen.fr.catify.server.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import univ.rouen.fr.catify.server.entity.Category;
 import univ.rouen.fr.catify.server.repository.CategoryRepository;
@@ -20,14 +18,11 @@ public class SearchCategoryService {
 
     // REQUESTS
 
-    public Page<Category> searchCategories(Boolean root, Date afterDate, Date beforeDate, Pageable pageable) {
-        if (afterDate != null && beforeDate != null && afterDate.after(beforeDate)) {
-            throw new IllegalArgumentException("The 'after' date cannot be after the 'before' date.");
-        }
-        return categoryRepository.findCategoriesByFilters(root, afterDate, beforeDate, pageable);
-    }
-
     public List<Category> searchCategories(Boolean root, Date afterDate, Date beforeDate) {
+        if (afterDate != null && beforeDate != null && afterDate.after(beforeDate)) {
+            throw new AssertionError("La date donnée aprés ne peut être après celui donnée pour avant.");
+        }
+
         List<Category> categories = categoryRepository.findAll();
 
         if (root != null) {

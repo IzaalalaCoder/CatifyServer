@@ -22,7 +22,7 @@ public class CategoryService {
     }
 
     public Category getCategoryById(int id) {
-        return categoryRepository.findById(id).orElse(null);
+        return categoryRepository.findById(id).orElseThrow();
     }
 
     // COMMANDS
@@ -31,31 +31,43 @@ public class CategoryService {
     public void addCategory(Category newCategory) {
         checkCategory(newCategory);
         if (this.categoryRepository.existsByName(newCategory.getName())) {
-            return;
+            throw new AssertionError("this category already exist");
         }
         categoryRepository.save(newCategory);
     }
 
     @Transactional
     public void updateCategoryOnName(Integer id, String name) {
+        if (name == null || name.isEmpty()) {
+            throw new AssertionError("Le nom de la catégorie est requis");
+        }
         this.categoryRepository.findById(id)
-            .map(c -> {
-                c.setName(name);
-                return this.categoryRepository.save(c);
-            })
-            .orElseGet(() -> null);
+        .map(c -> {
+            c.setName(name);
+            return this.categoryRepository.save(c);
+        })
+        .orElseThrow();
     }
 
     @Transactional
     public void associate(int parentId, int childId) {
+        if (parentId == childId) {
+            throw new AssertionError("parentId cannot have parentId as child");
+        }
         Category catParent = categoryRepository.findById(parentId).orElse(null);
         Category catChild = categoryRepository.findById(childId).orElse(null);
 
-        if (catParent != null && catChild != null) {
-            catChild.setParent(catParent);
-            categoryRepository.save(catParent);
-            categoryRepository.save(catChild);
+        if (catParent == null || catChild == null) {
+            throw new AssertionError("Les catégories parent ou enfant n'existent pas");
         }
+
+        if (catParent.getChild(catChild.getName()) != null) {
+            throw new AssertionError("Le parent contient déjà la catégorie enfant à ajouté");
+        }
+
+        catChild.setParent(catParent);
+        categoryRepository.save(catParent);
+        categoryRepository.save(catChild);
     }
 
     @Transactional
@@ -63,20 +75,22 @@ public class CategoryService {
         Category catParent = categoryRepository.findById(parentId).orElse(null);
         Category catChild = categoryRepository.findById(childId).orElse(null);
 
-        if (catParent != null && catChild != null) {
-            catChild.setParent(null);
-            categoryRepository.save(catParent);
-            categoryRepository.save(catChild);
+        if (catParent == null || catChild == null) {
+            throw new AssertionError("Les catégories parent ou enfant n'existent pas");
         }
+
+        if (catParent.getChild(catChild.getName()) == null) {
+            throw new AssertionError("Le parent ne contient pas la catégorie enfant à dissocié");
+        }
+
+        catChild.setParent(null);
+        categoryRepository.save(catParent);
+        categoryRepository.save(catChild);
     }
 
     @Transactional
     public void deleteCategory(int id) {
-        Category categoryToDelete = categoryRepository.findById(id).orElse(null);
-
-        if (categoryToDelete == null) {
-            return;
-        }
+        Category categoryToDelete = categoryRepository.findById(id).orElseThrow();
 
         for (Category child : categoryToDelete.getAllChildren()) {
             child.setParent(null);
@@ -94,15 +108,15 @@ public class CategoryService {
 
     private void checkCategory(Category category) {
         if (category == null) {
-            throw new IllegalArgumentException("Category cannot be null");
+            throw new AssertionError("Category cannot be null");
         }
 
         if (category.getName() == null || category.getName().isEmpty()) {
-            throw new IllegalArgumentException("Category name cannot be null or empty");
+            throw new AssertionError("Category name cannot be null or empty");
         }
 
         if (category.getParent() == category) {
-            throw new IllegalArgumentException("A category cannot be its own parent");
+            throw new AssertionError("A category cannot be its own parent");
         }
     }
 }

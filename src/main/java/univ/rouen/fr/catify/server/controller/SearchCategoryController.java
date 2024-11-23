@@ -3,11 +3,15 @@ package univ.rouen.fr.catify.server.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import univ.rouen.fr.catify.server.entity.Category;
 import univ.rouen.fr.catify.server.service.SearchCategoryService;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:4200")
@@ -21,8 +25,8 @@ public class SearchCategoryController {
 
     // MAPPINGS
 
-    @GetMapping("search")
-    public Page<Category> searchCategories(
+    @GetMapping(value = "search", produces = "application/json")
+    public ResponseEntity<Map<String, Object>> searchCategories(
             @RequestParam(value = "root", required = false) Boolean root,
             @RequestParam(value = "after", required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") Date afterDate,
             @RequestParam(value = "before", required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") Date beforeDate,
@@ -30,10 +34,38 @@ public class SearchCategoryController {
             @RequestParam(value = "sort", defaultValue = "dateOfCreation") String sortBy,
             @RequestParam(value = "order", defaultValue = "asc") String sortDirection) {
 
-        Sort.Direction direction = Sort.Direction.fromString(sortDirection.toUpperCase());
-        Pageable pageable = PageRequest.of(page, 10, direction, sortBy); // Initialisation du Pageable
+        try {
+            Sort.Direction direction = Sort.Direction.fromString(sortDirection.toUpperCase());
+            List<Category> categoryList = searchCategoryService.searchCategories(root, afterDate, beforeDate);
 
-        List<Category> categoryList = searchCategoryService.searchCategories(root, afterDate, beforeDate);
+            if (sortBy != null && !sortBy.isEmpty()) {
+                this.sortListBySpecificSort(categoryList, sortBy, direction);
+            }
+
+            int pageSize = 10;
+            int start = page * pageSize;
+            int end = Math.min(start + pageSize, categoryList.size());
+            List<Category> paginatedList = categoryList.subList(start, end);
+
+            int totalElements = categoryList.size();
+            int totalPages = (int) Math.ceil((double) totalElements / pageSize);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("categories", paginatedList);
+            response.put("totalPages", totalPages);
+            response.put("currentPage", page);
+
+            return ResponseEntity.ok(response);
+        } catch (AssertionError e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+    }
+
+    // UTILS
+
+    private void sortListBySpecificSort(List<Category> categoryList, String sortBy, Sort.Direction direction) {
         switch (sortBy.toLowerCase()) {
             case "id":
                 categoryList.sort((c1, c2) -> {
@@ -60,12 +92,7 @@ public class SearchCategoryController {
                 });
                 break;
             default:
-                throw new IllegalArgumentException("Invalid sort field: " + sortBy);
+                break;
         }
-        int start = page * 10;
-        int end = Math.min((start + 10), categoryList.size());
-        List<Category> paginatedList = categoryList.subList(start, end);
-
-        return new PageImpl<>(paginatedList, pageable, categoryList.size());
     }
 }
