@@ -1,5 +1,9 @@
 package univ.rouen.fr.catify.server.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -25,6 +29,27 @@ public class SearchCategoryController {
 
     // MAPPINGS
 
+    @Operation(
+        description = "Retrieve filtered categories from the system",
+        summary = "Get a list of filtered categories",
+        responses = {
+            @ApiResponse(
+                description = "Successfully retrieved all categories",
+                responseCode = "200",
+                content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = Category.class)
+                )
+            ),
+            @ApiResponse(
+                description = "Invalid date format or logical error with date range",
+                responseCode = "400",
+                content = @Content(
+                    mediaType = "application/json"
+                )
+            )
+        }
+    )
     @GetMapping(value = "search", produces = "application/json")
     public ResponseEntity<Map<String, Object>> searchCategories(
             @RequestParam(value = "root", required = false) Boolean root,
