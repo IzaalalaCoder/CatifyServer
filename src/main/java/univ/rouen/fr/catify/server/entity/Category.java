@@ -36,24 +36,17 @@ public class Category {
         this.children = new ArrayList<>();
     }
 
-    public Category(String name) {
+    public Category(String name, Date date) {
         if (name == null || name.isEmpty()) {
             throw new IllegalArgumentException("Name cannot be null or empty");
         }
-        this.dateOfCreation = new Date();
+        if (date == null) {
+            throw new IllegalArgumentException("Date cannot be null");
+        }
+        this.dateOfCreation = date;
         this.children = new ArrayList<>();
         this.name = name;
         this.parent = null;
-    }
-
-    public Category(String name, Category parent) {
-        if (name == null || name.isEmpty()) {
-            throw new IllegalArgumentException("Name cannot be null or empty");
-        }
-        this.dateOfCreation = new Date();
-        this.children = new ArrayList<>();
-        this.name = name;
-        setParent(parent);
     }
 
     // REQUESTS
