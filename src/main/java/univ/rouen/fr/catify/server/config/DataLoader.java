@@ -1,4 +1,4 @@
-package univ.rouen.fr.catify.server;
+package univ.rouen.fr.catify.server.config;
 
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
