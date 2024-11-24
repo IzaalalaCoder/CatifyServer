@@ -92,6 +92,10 @@ public class CategoryService {
     public void deleteCategory(int id) {
         Category categoryToDelete = categoryRepository.findById(id).orElseThrow();
 
+        if (categoryToDelete.getParent() != null) {
+            categoryToDelete.setParent(null);
+        }
+
         for (Category child : categoryToDelete.getAllChildren()) {
             child.setParent(null);
             categoryRepository.save(child);
