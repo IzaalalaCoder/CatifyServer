@@ -23,7 +23,7 @@ public class CategoriesController {
     @DeleteMapping(path="/deleteAll", produces = "application/json")
     public ResponseEntity<String> deleteAll() {
         categoryService.deleteAll();
-        return ResponseEntity.ok("Les catégories ont bien été supprimés");
+        return ResponseEntity.ok("{\"message\" : \"Les catégories ont bien été supprimés\"}");
     }
 
     @GetMapping(produces = "application/json")
@@ -36,8 +36,8 @@ public class CategoriesController {
         try {
             categoryService.addCategory(category);
         } catch (AssertionError e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("Le nom de la catégorie est déjà pris");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("{\"message\" : \"Le nom de la catégorie est déjà pris\"}");
         }
-        return ResponseEntity.status(HttpStatus.CREATED).body("La catégorie a bien été créée");
+        return ResponseEntity.status(HttpStatus.CREATED).body("{\"message\": \"La catégorie a bien été créée\"}");
     }
 }

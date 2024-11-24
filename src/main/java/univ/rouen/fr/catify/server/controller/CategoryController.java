@@ -35,7 +35,7 @@ public class CategoryController {
     public ResponseEntity<String> associateChildAtParent(@PathVariable int parent, @PathVariable int child) {
         try {
             this.categoryService.associate(parent, child);
-            return ResponseEntity.ok("Les catégories sont maintenant associées");
+            return ResponseEntity.ok("{\"message\":\"Les catégories sont maintenant associées\"");
         } catch (AssertionError e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
@@ -45,7 +45,7 @@ public class CategoryController {
     public ResponseEntity<String> dissociateChildAtParent(@PathVariable int parent, @PathVariable int child) {
         try {
             this.categoryService.dissociate(parent, child);
-            return ResponseEntity.ok("Les catégories sont maintenant dissociées");
+            return ResponseEntity.ok("{\"message\":\"Les catégories sont maintenant dissociées\"}");
         } catch (AssertionError e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
@@ -65,11 +65,11 @@ public class CategoryController {
     public ResponseEntity<String> updateCategoryOnName(@PathVariable int id, @PathVariable String name) {
         try {
             categoryService.updateCategoryOnName(id, name);
-            return ResponseEntity.ok("La catégorie a bien changé de nom");
+            return ResponseEntity.ok("{\"message\":\"La catégorie a bien changé de nom\"}");
         } catch (AssertionError e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("La catégorie est inexistante");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"message\":\"La catégorie est inexistante\"}");
         }
     }
 
@@ -77,9 +77,9 @@ public class CategoryController {
     public ResponseEntity<String> deleteCategory(@PathVariable int id) {
         try {
             categoryService.deleteCategory(id);
-            return ResponseEntity.ok("La catégorie est supprimée");
+            return ResponseEntity.ok("{\"message\":\"La catégorie est supprimée\"}");
         } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("La catégorie n'existe pas");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("{\"message\":\"La catégorie n'existe pas\"}");
         }
     }
 }
