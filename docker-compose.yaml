@@ -24,11 +24,15 @@ services:
       - "8080:8080"
     environment:
       SPRING_APPLICATION_JSON: '{
-        "spring.datasource.url"  : "jdbc:mariadb://db:$MARIADB_DOCKER_PORT/$MARIADB_DATABASE",
+        "spring.application.name" : "catify",
+        "spring.datasource.driver-class-name" : "org.mariadb.jdbc.Driver",
+        "server.servlet.context-path" : "/catify",
+        "spring.datasource.url" : "jdbc:mariadb://db:$MARIADB_DOCKER_PORT/$MARIADB_DATABASE",
         "spring.datasource.username" : "$MARIADB_USER",
         "spring.datasource.password" : "$MARIADB_ROOT_PASSWORD",
         "spring.jpa.properties.hibernate.dialect" : "org.hibernate.dialect.MariaDBDialect",
-        "spring.jpa.hibernate.ddl-auto" : "update"
+        "spring.jpa.hibernate.ddl-auto" : "update",
+        "spring.jpa.open-in-view" : false
       }'
 
 volumes:
