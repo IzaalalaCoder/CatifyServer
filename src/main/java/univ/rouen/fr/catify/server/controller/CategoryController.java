@@ -35,7 +35,7 @@ public class CategoryController {
     public ResponseEntity<String> associateChildAtParent(@PathVariable int parent, @PathVariable int child) {
         try {
             this.categoryService.associate(parent, child);
-            return ResponseEntity.ok("{\"message\":\"Les catégories sont maintenant associées\"");
+            return ResponseEntity.ok("{\"message\":\"Les catégories sont maintenant associées\"}");
         } catch (AssertionError e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
